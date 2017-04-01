@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
 [assembly: AssemblyTitle("IngameScriptBuilder")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A little tool that helps create ingame script for Space Engineers")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("IngameScriptBuilder")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyCopyright("Copyright (c) 2017 Sisk S'jet")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
