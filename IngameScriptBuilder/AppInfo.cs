@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace IngameScriptBuilder {
@@ -12,6 +13,7 @@ namespace IngameScriptBuilder {
         private static Version _fileVersion;
         private static string _product;
         private static string _productVersion;
+        private static string _fileName;
 
         public static string Title => _title ?? (_title = GetCustomAttributes<AssemblyTitleAttribute>().Title);
         public static string Description => _description ?? (_description = GetCustomAttributes<AssemblyDescriptionAttribute>().Description);
@@ -30,6 +32,8 @@ namespace IngameScriptBuilder {
         }
         public static string Product => _product ?? (_product = GetCustomAttributes<AssemblyProductAttribute>().Product);
         public static string ProductVersion => _productVersion ?? (_productVersion = GetCustomAttributes<AssemblyInformationalVersionAttribute>().InformationalVersion);
+        public static string FileName => _fileName ?? (_fileName = Path.GetFileName(Location));
+        public static string Location => Assembly.Location;
 
         private static T GetCustomAttributes<T>() where T : Attribute {
             var attributes = Assembly.GetCustomAttributes(typeof(T), true);
