@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -72,16 +73,23 @@ namespace IngameScriptBuilder {
             // todo: exclude files.
             // todo: exclude directories (merge with args).
             var excludedDirectories = new List<string> { "Properties", "obj", "bin" };
+            var members = new List<MemberDeclarationSyntax>();
 
             if (Path.HasExtension(projectPath)) {
                 var project = await workspace.OpenProjectAsync(projectPath, cancellationToken);
                 Console.WriteLine($"Building {project.Name}");
-                // why the fuck are there no documents...
                 // bug: no documents in loaded project.
                 // todo: figure out why no documents exist in loaded projects.
-                Console.WriteLine($"{project.DocumentIds.Count} documents");
+                Console.WriteLine($"{project.Documents.Count()} documents");
+                if (!project.HasDocuments) {
+                    Console.WriteLine($"No documents found in project: {path}");
+                    Console.WriteLine("Won't work until i figured out why loaded projects don't have documents.");
+                    return;
+                }
                 foreach (var document in project.Documents) {
-                    Console.WriteLine($"{document.Name} - {document.SourceCodeKind}");
+                    var tree = await document.GetSyntaxTreeAsync(cancellationToken);
+                    var types = await GetMemberAsync(tree, cancellationToken);
+                    members.AddRange(types);
                 }
             } else {
                 if (!Directory.GetFiles(path, "*.cs").Any()) {
@@ -92,40 +100,38 @@ namespace IngameScriptBuilder {
                 var files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories)
                     .Where(x => !excludedDirectories.Contains(x.Replace(path, "").Split(Path.DirectorySeparatorChar).First()));
 
-                var typeList = new List<MemberDeclarationSyntax>();
-
                 foreach (var file in files) {
                     var code = await new StreamReader(file).ReadToEndAsync();
                     var tree = CSharpSyntaxTree.ParseText(code, CSharpParseOptions.Default, "", null, cancellationToken);
-                    var root = (CompilationUnitSyntax)await tree.GetRootAsync(cancellationToken);
-                    var types = root.DescendantNodes(x => x is CompilationUnitSyntax || x is NamespaceDeclarationSyntax).OfType<MemberDeclarationSyntax>().Where(x => x.GetType() != typeof(NamespaceDeclarationSyntax)).ToArray();
-                    typeList.AddRange(types);
+                    var types = await GetMemberAsync(tree, cancellationToken);
+                    members.AddRange(types);
                 }
-
-                var entry = typeList.OfType<ClassDeclarationSyntax>().FirstOrDefault(x => x.Identifier.Text == "Program");
-                if (entry?.BaseList == null || !entry.BaseList.ToString().Contains("MyGridProgram")) {
-                    Console.WriteLine($"No entry point found. {Environment.NewLine}Create a 'Program' class that inherit from 'MyGridProgram'");
-                    return;
-                }
-                // todo: sort nested member like: type > name.
-                var newEntry = entry.AddMembers(typeList.Where(x => x != entry).ToArray());
-                var formatedEntry = Formatter.Format(newEntry, workspace, options, cancellationToken);
-
-                string result;
-                if (formatedEntry == null) {
-                    Console.WriteLine("Unexpected format error. Resumeing without formating.");
-                    result = newEntry.GetText().ToString();
-                } else {
-                    result = formatedEntry.GetText().ToString();
-                }
-
-                result = result.Remove(0, result.IndexOf("{", StringComparison.Ordinal) + 1);
-                result = result.Remove(result.LastIndexOf("}", StringComparison.Ordinal));
-                result = UnindentAsMuchAsPossible(new string(' ', IndentSize) + result.Trim());
-
-                Console.WriteLine($"{result.Length} / 100000");
-                Console.WriteLine(result);
             }
+
+            var entry = members.OfType<ClassDeclarationSyntax>().FirstOrDefault(x => x.Identifier.Text == "Program");
+            if (entry?.BaseList == null || !entry.BaseList.ToString().Contains("MyGridProgram")) {
+                Console.WriteLine($"No entry point found. {Environment.NewLine}Create a 'Program' class that inherit from 'MyGridProgram'");
+                return;
+            }
+            // todo: sort nested member like: type > name.
+            var newEntry = entry.AddMembers(members.Where(x => x != entry).ToArray());
+            var formatedEntry = Formatter.Format(newEntry, workspace, options, cancellationToken);
+
+            string result;
+            if (formatedEntry == null) {
+                Console.WriteLine("Unexpected format error. Resumeing without formating.");
+                result = newEntry.GetText().ToString();
+            } else {
+                result = formatedEntry.GetText().ToString();
+            }
+
+            result = result.Remove(0, result.IndexOf("{", StringComparison.Ordinal) + 1);
+            result = result.Remove(result.LastIndexOf("}", StringComparison.Ordinal));
+            result = UnindentAsMuchAsPossible(new string(' ', IndentSize) + result.Trim());
+
+            Console.WriteLine($"{result.Length} / 100000");
+            // todo: export to clipboar or file.
+            Console.WriteLine(result);
         }
 
         private static string UnindentAsMuchAsPossible(string text) {
@@ -133,6 +139,11 @@ namespace IngameScriptBuilder {
             var minDistance = lines.Where(line => line.Length > 0).Min(line => line.TakeWhile(char.IsWhiteSpace).Sum(c => c == '\t' ? IndentSize : 1));
             var result = string.Join(Environment.NewLine, lines.Select(line => line.Replace("\t", new string(' ', IndentSize))).Select(line => line.Substring(Math.Min(line.Length, minDistance))));
             return result;
+        }
+
+        private static async Task<IEnumerable<MemberDeclarationSyntax>> GetMemberAsync(SyntaxTree tree, CancellationToken cancellationToken) {
+            var root = (CompilationUnitSyntax)await tree.GetRootAsync(cancellationToken);
+            return root.DescendantNodes(x => x is CompilationUnitSyntax || x is NamespaceDeclarationSyntax).OfType<MemberDeclarationSyntax>().Where(x => x.GetType() != typeof(NamespaceDeclarationSyntax));
         }
     }
 }
