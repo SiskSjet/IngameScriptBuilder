@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 
 namespace IngameScriptBuilder {
     class Program {
         static int Main(string[] args) {
+            if (args.Any(x => x.Count(c => c == '\"') % 2 > 0)) {
+                Console.WriteLine("Unexpected excaped quote.");
+                return 1;
+            }
+
             try {
                 return new App().Execute(args);
             } catch (Exception ex) {
