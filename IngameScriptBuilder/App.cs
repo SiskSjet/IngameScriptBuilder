@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace IngameScriptBuilder {
@@ -32,7 +33,7 @@ namespace IngameScriptBuilder {
             _version = Option("-v | --version", "Show version information", CommandOptionType.NoValue);
             _help = Option("-h | --help", "Show help information", CommandOptionType.NoValue);
 
-            OnExecute((Func<int>) RunCommand);
+            OnExecute((Func<int>)RunCommand);
         }
 
         public new void ShowHelp(string commandName = null) {
@@ -66,6 +67,7 @@ namespace IngameScriptBuilder {
                     return 1;
                 }
 
+            // fixme: weird invalid char exeption on powershell autocomplete project path. try normalize project path.
             var project = _project.Value;
             var output = _output.Value;
             var minify = _minify.HasValue();
@@ -74,10 +76,19 @@ namespace IngameScriptBuilder {
             var excludeFiles = _excludeFiles.Values;
             var excludeDirectories = _excludeDirectories.Values;
 
-            // todo: implement a generate method.
-            // Generator.Generate(project, minify, removeComments, removeDocumentations, excludeFiles, excludeDirectories)
+            var cts = new CancellationTokenSource();
+            var ct = cts.Token;
 
-            return 0;
+            Console.CancelKeyPress += delegate { cts.Cancel(); };
+
+            try {
+                // todo: implement parameters.
+                Generator.GenerateAsync(project, ct).Wait(ct);
+                return 0;
+            } catch (Exception exception) {
+                Console.WriteLine(exception);
+                return 1;
+            }
         }
     }
 }
