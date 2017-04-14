@@ -56,19 +56,20 @@ namespace IngameScriptBuilder {
                 return 0;
             }
 
-            if (string.IsNullOrWhiteSpace(_project.Value)) {
+            var project = _project.Value.Trim('"', '\'');
+
+            if (string.IsNullOrWhiteSpace(project)) {
                 Console.WriteLine("A project file or directory is required.");
                 return 1;
             }
 
-            if (!(Path.HasExtension(_project.Value) && Path.GetExtension(_project.Value) == ".csproj"))
-                if (!Directory.Exists(_project.Value)) {
-                    Console.WriteLine("No valid project found at {0}", _project.Value);
+            if (!(Path.HasExtension(project) && Path.GetExtension(project) == ".csproj")) {
+                if (!Directory.Exists(project)) {
+                    Console.WriteLine("No valid project found at {0}", project);
                     return 1;
                 }
-
-            // fixme: weird invalid char exeption on powershell autocomplete project path. try normalize project path.
-            var project = _project.Value;
+            }
+            
             var output = _output.Value;
             var minify = _minify.HasValue();
             var removeComments = _removeComments.HasValue();
