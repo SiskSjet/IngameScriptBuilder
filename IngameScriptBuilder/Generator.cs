@@ -70,8 +70,6 @@ namespace IngameScriptBuilder {
                 .WithChangedOption(CSharpFormattingOptions.WrappingKeepStatementsOnSingleLine, false)
                 .WithChangedOption(CSharpFormattingOptions.WrappingPreserveSingleLine, true);
 
-            // todo: exclude files.
-            // todo: exclude directories (merge with args).
             var rootDirectory = Path.HasExtension(path) ? Path.GetDirectoryName(path) ?? path.Replace(Path.GetFileName(path), "") : path;
             var filter = new List<string> { "Properties", "obj", "bin" };
             filter.AddRange(excludeDirectories);
@@ -138,7 +136,7 @@ namespace IngameScriptBuilder {
             result = UnindentAsMuchAsPossible(new string(' ', IndentSize) + result.Trim());
 
             Console.WriteLine($"{result.Length} / 100000");
-            // todo: export to clipboar or file.
+            // todo: export to clipboard or file.
             Console.WriteLine(result);
         }
 
