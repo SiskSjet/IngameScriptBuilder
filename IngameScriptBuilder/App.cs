@@ -57,7 +57,6 @@ namespace IngameScriptBuilder {
             }
 
             var project = _project.Value.Trim('"', '\'');
-
             if (string.IsNullOrWhiteSpace(project)) {
                 Console.WriteLine("A project file or directory is required.");
                 return 1;
@@ -69,7 +68,7 @@ namespace IngameScriptBuilder {
                     return 1;
                 }
             }
-            
+
             var output = _output.Value;
             var minify = _minify.HasValue();
             var removeComments = _removeComments.HasValue();
@@ -84,7 +83,7 @@ namespace IngameScriptBuilder {
 
             try {
                 // todo: implement parameters.
-                Generator.GenerateAsync(project, ct).Wait(ct);
+                Generator.GenerateAsync(project, excludeFiles, excludeDirectories, ct).Wait(ct);
                 return 0;
             } catch (Exception exception) {
                 Console.WriteLine(exception);

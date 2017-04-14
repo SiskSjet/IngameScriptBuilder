@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 namespace IngameScriptBuilder {
     public class Generator {
         private const int IndentSize = 4;
-        public static async Task GenerateAsync(string projectPath, CancellationToken cancellationToken) {
+        public static async Task GenerateAsync(string projectPath, IEnumerable<string> excludeFiles, IEnumerable<string> excludeDirectories, CancellationToken cancellationToken) {
             var path = Path.GetFullPath(projectPath);
             var workspace = MSBuildWorkspace.Create();
             var options = workspace.Options
@@ -72,7 +72,12 @@ namespace IngameScriptBuilder {
 
             // todo: exclude files.
             // todo: exclude directories (merge with args).
-            var excludedDirectories = new List<string> { "Properties", "obj", "bin" };
+            var rootDirectory = Path.HasExtension(path) ? Path.GetDirectoryName(path) ?? path.Replace(Path.GetFileName(path), "") : path;
+            var filter = new List<string> { "Properties", "obj", "bin" };
+            filter.AddRange(excludeDirectories);
+            filter.AddRange(excludeFiles);
+            filter = filter.ConvertAll(x => Path.Combine(rootDirectory, x));
+
             var members = new List<MemberDeclarationSyntax>();
 
             if (Path.HasExtension(projectPath)) {
@@ -86,7 +91,11 @@ namespace IngameScriptBuilder {
                     Console.WriteLine("Won't work until i figured out why loaded projects don't have documents.");
                     return;
                 }
-                foreach (var document in project.Documents) {
+
+                // note: if file path is relative convert to full path. can't check it until i fix the no document thing.
+                var documents = project.Documents.Where(x => !filter.Any(x.FilePath.StartsWith));
+
+                foreach (var document in documents) {
                     var tree = await document.GetSyntaxTreeAsync(cancellationToken);
                     var types = await GetMemberAsync(tree, cancellationToken);
                     members.AddRange(types);
@@ -97,8 +106,7 @@ namespace IngameScriptBuilder {
                     return;
                 }
 
-                var files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories)
-                    .Where(x => !excludedDirectories.Contains(x.Replace(path, "").Split(Path.DirectorySeparatorChar).First()));
+                var files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories).Where(x => !filter.Any(x.StartsWith));
 
                 foreach (var file in files) {
                     var code = await new StreamReader(file).ReadToEndAsync();
