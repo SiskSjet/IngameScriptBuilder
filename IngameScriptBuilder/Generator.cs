@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 namespace IngameScriptBuilder {
     public class Generator {
         private const int IndentSize = 4;
-        public static async Task GenerateAsync(string projectPath, IEnumerable<string> excludeFiles, IEnumerable<string> excludeDirectories, CancellationToken cancellationToken) {
+        public static async Task GenerateAsync(string projectPath, string output, IEnumerable<string> excludeFiles, IEnumerable<string> excludeDirectories, CancellationToken cancellationToken) {
             var path = Path.GetFullPath(projectPath);
             var workspace = MSBuildWorkspace.Create();
             var options = workspace.Options
@@ -136,9 +136,15 @@ namespace IngameScriptBuilder {
             result = UnindentAsMuchAsPossible(new string(' ', IndentSize) + result.Trim());
 
             Console.WriteLine($"{result.Length} / 100000");
-            // todo: export to clipboard or file.
-            Clipboad.SetText(result);
-            Console.WriteLine("Script copied to Clipboad.");
+            if (string.IsNullOrWhiteSpace(output)) {
+                Clipboad.SetText(result);
+                Console.WriteLine("Script copied to Clipboad.");
+            } else {
+                using (var writer = new StreamWriter(output)) {
+                    await writer.WriteAsync(result);
+                    Console.WriteLine($"Script written to file: {output}");
+                }
+            }
         }
 
         private static string UnindentAsMuchAsPossible(string text) {
