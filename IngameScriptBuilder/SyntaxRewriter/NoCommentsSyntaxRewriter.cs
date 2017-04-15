@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace IngameScriptBuilder {
+namespace IngameScriptBuilder.SyntaxRewriter {
     public class NoCommentsSyntaxRewriter : CSharpSyntaxRewriter {
         public override SyntaxTrivia VisitTrivia(SyntaxTrivia trivia) {
             if (trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) || trivia.IsKind(SyntaxKind.MultiLineCommentTrivia)) {

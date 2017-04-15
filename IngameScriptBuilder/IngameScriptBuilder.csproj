@@ -165,8 +165,8 @@
     <Compile Include="AppInfo.cs" />
     <Compile Include="Clipboad.cs" />
     <Compile Include="Generator.cs" />
-    <Compile Include="NoCommentsSyntaxRewriter.cs" />
-    <Compile Include="NoDocumentationSyntaxRewriter.cs" />
+    <Compile Include="SyntaxRewriter\NoCommentsSyntaxRewriter.cs" />
+    <Compile Include="SyntaxRewriter\NoDocumentationSyntaxRewriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

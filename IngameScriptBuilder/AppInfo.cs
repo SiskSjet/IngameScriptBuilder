@@ -40,8 +40,9 @@ namespace IngameScriptBuilder {
 
         private static T GetCustomAttributes<T>() where T : Attribute {
             var attributes = Assembly.GetCustomAttributes(typeof(T), true);
-            if (attributes.Length == 0)
+            if (attributes.Length == 0) {
                 return null;
+            }
             return (T) attributes[0];
         }
     }
