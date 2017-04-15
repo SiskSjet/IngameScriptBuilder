@@ -137,7 +137,8 @@ namespace IngameScriptBuilder {
 
             Console.WriteLine($"{result.Length} / 100000");
             // todo: export to clipboard or file.
-            Console.WriteLine(result);
+            Clipboad.SetText(result);
+            Console.WriteLine("Script copied to Clipboad.");
         }
 
         private static string UnindentAsMuchAsPossible(string text) {
