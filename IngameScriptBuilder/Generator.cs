@@ -76,17 +76,12 @@ namespace IngameScriptBuilder {
 
             if (Path.HasExtension(projectPath)) {
                 var project = await workspace.OpenProjectAsync(projectPath, cancellationToken);
-                Console.WriteLine($"Building {project.Name}");
-                // bug: no documents in loaded project.
-                // todo: figure out why no documents exist in loaded projects.
-                Console.WriteLine($"{project.Documents.Count()} documents");
+
                 if (!project.HasDocuments) {
                     Console.WriteLine($"No documents found in project: {path}");
-                    Console.WriteLine("Won't work until i figured out why loaded projects don't have documents.");
                     return;
                 }
 
-                // note: if file path is relative convert to full path. can't check it until i fix the no document thing.
                 var documents = project.Documents.Where(x => !filter.Any(x.FilePath.StartsWith));
 
                 foreach (var document in documents) {
