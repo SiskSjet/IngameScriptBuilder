@@ -140,8 +140,8 @@ namespace IngameScriptBuilder {
             Console.WriteLine($"{AppInfo.Title} [Version {AppInfo.AssemblyVersion}]{Environment.NewLine}");
             Console.WriteLine($"Length: {result.Length} / 100000");
             if (string.IsNullOrWhiteSpace(output)) {
-                Clipboad.SetText(result);
-                Console.WriteLine("Script copied to Clipboad.");
+                Clipboard.SetText(result);
+                Console.WriteLine("Script copied to Clipboard.");
             } else {
                 using (var writer = new StreamWriter(output)) {
                     await writer.WriteAsync(result);

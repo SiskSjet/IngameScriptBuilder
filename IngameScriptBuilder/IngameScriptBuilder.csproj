@@ -163,7 +163,7 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="AppInfo.cs" />
-    <Compile Include="Clipboad.cs" />
+    <Compile Include="Clipboard.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="SyntaxRewriter\NoCommentsSyntaxRewriter.cs" />
     <Compile Include="SyntaxRewriter\NoDocumentationSyntaxRewriter.cs" />

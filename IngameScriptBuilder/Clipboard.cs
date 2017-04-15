@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 
 namespace IngameScriptBuilder {
-    public static class Clipboad {
+    public static class Clipboard {
         [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
         public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 
