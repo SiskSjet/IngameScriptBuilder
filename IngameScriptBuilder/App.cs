@@ -83,7 +83,7 @@ namespace IngameScriptBuilder {
 
             try {
                 // todo: implement parameters.
-                Generator.GenerateAsync(project, output, excludeFiles, excludeDirectories, ct).Wait(ct);
+                Generator.GenerateAsync(project, output, excludeFiles, excludeDirectories, removeComments, removeDocumentations, ct).Wait(ct);
                 return 0;
             } catch (Exception exception) {
                 Console.WriteLine(exception);
