@@ -33,7 +33,7 @@ namespace IngameScriptBuilder {
             _version = Option("-v | --version", "Show version information", CommandOptionType.NoValue);
             _help = Option("-h | --help", "Show help information", CommandOptionType.NoValue);
 
-            OnExecute((Func<int>)RunCommand);
+            OnExecute((Func<int>) RunCommand);
         }
 
         public new void ShowHelp(string commandName = null) {

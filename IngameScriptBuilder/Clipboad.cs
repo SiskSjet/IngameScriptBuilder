@@ -6,11 +6,17 @@ using System.Threading;
 
 namespace IngameScriptBuilder {
     public static class Clipboad {
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        private enum Format : uint {
-            CF_TEXT = 1,
-            CF_UNICODETEXT = 13
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
+
+        public static void SetText(string text) {
+            var isAscii = text != null && text == Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(text));
+            SetText(text, isAscii ? Format.CF_UNICODETEXT : Format.CF_TEXT);
         }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CloseClipboard();
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr GlobalAlloc(uint uFlags, UIntPtr dwBytes);
@@ -25,24 +31,12 @@ namespace IngameScriptBuilder {
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GlobalUnlock(IntPtr hMem);
 
-        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
-        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
-
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool OpenClipboard(IntPtr hWndNewOwner);
 
         [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool CloseClipboard();
-
-        [DllImport("user32.dll")]
         private static extern IntPtr SetClipboardData(uint uFormat, IntPtr data);
-
-        public static void SetText(string text) {
-            var isAscii = text != null && text == Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(text));
-            SetText(text, isAscii ? Format.CF_UNICODETEXT : Format.CF_TEXT);
-        }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         private static void SetText(string text, Format format) {
@@ -69,14 +63,14 @@ namespace IngameScriptBuilder {
                     default:
                         throw new ArgumentOutOfRangeException(nameof(format), format, null);
                 }
-                var characters = (uint)text.Length;
+                var characters = (uint) text.Length;
                 var bytes = (characters + 1) * sizeOfChar;
 
                 const int GMEM_MOVABLE = 0x0002;
                 const int GMEM_ZEROINIT = 0x0040;
                 const int GHND = GMEM_MOVABLE | GMEM_ZEROINIT;
 
-                var hGlobal = GlobalAlloc(GHND, (UIntPtr)bytes);
+                var hGlobal = GlobalAlloc(GHND, (UIntPtr) bytes);
                 if (hGlobal == IntPtr.Zero) {
                     return;
                 }
@@ -93,7 +87,7 @@ namespace IngameScriptBuilder {
                         GlobalUnlock(target);
                     }
 
-                    if (SetClipboardData((uint)format, hGlobal).ToInt64() != 0) {
+                    if (SetClipboardData((uint) format, hGlobal).ToInt64() != 0) {
                         hGlobal = IntPtr.Zero;
                     }
                 } finally {
@@ -108,6 +102,12 @@ namespace IngameScriptBuilder {
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
             thread.Join();
+        }
+
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        private enum Format : uint {
+            CF_TEXT = 1,
+            CF_UNICODETEXT = 13
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using IngameScriptBuilder.SyntaxRewriter;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
@@ -15,6 +16,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 namespace IngameScriptBuilder {
     public class Generator {
         private const int IndentSize = 4;
+
         public static async Task GenerateAsync(string projectPath, string output, IEnumerable<string> excludeFiles, IEnumerable<string> excludeDirectories, bool removeComments, bool removeDocumentation, CancellationToken cancellationToken) {
             var path = Path.GetFullPath(projectPath);
             var workspace = MSBuildWorkspace.Create();
@@ -23,7 +25,6 @@ namespace IngameScriptBuilder {
                 .WithChangedOption(CSharpFormattingOptions.IndentBraces, false)
                 .WithChangedOption(CSharpFormattingOptions.IndentSwitchCaseSection, true)
                 .WithChangedOption(CSharpFormattingOptions.IndentSwitchSection, true)
-
                 .WithChangedOption(CSharpFormattingOptions.NewLineForCatch, false)
                 .WithChangedOption(CSharpFormattingOptions.NewLineForClausesInQuery, true)
                 .WithChangedOption(CSharpFormattingOptions.NewLineForElse, false)
@@ -39,7 +40,6 @@ namespace IngameScriptBuilder {
                 .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInObjectCollectionArrayInitializers, false)
                 .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInProperties, false)
                 .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInTypes, false)
-
                 .WithChangedOption(CSharpFormattingOptions.SpaceAfterCast, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceAfterColonInBaseTypeDeclaration, true)
                 .WithChangedOption(CSharpFormattingOptions.SpaceAfterComma, true)
@@ -47,31 +47,27 @@ namespace IngameScriptBuilder {
                 .WithChangedOption(CSharpFormattingOptions.SpaceAfterDot, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceAfterMethodCallName, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceAfterSemicolonsInForStatement, true)
-
                 .WithChangedOption(CSharpFormattingOptions.SpaceBeforeColonInBaseTypeDeclaration, true)
                 .WithChangedOption(CSharpFormattingOptions.SpaceBeforeComma, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceBeforeDot, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceBeforeOpenSquareBracket, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceBeforeSemicolonsInForStatement, false)
-
                 .WithChangedOption(CSharpFormattingOptions.SpaceBetweenEmptyMethodCallParentheses, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceBetweenEmptyMethodDeclarationParentheses, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceBetweenEmptySquareBrackets, false)
-
                 .WithChangedOption(CSharpFormattingOptions.SpaceWithinCastParentheses, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceWithinExpressionParentheses, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceWithinMethodCallParentheses, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceWithinMethodDeclarationParenthesis, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceWithinOtherParentheses, false)
                 .WithChangedOption(CSharpFormattingOptions.SpaceWithinSquareBrackets, false)
-
                 .WithChangedOption(CSharpFormattingOptions.SpacesIgnoreAroundVariableDeclaration, false)
                 .WithChangedOption(CSharpFormattingOptions.SpacingAfterMethodDeclarationName, false)
                 .WithChangedOption(CSharpFormattingOptions.WrappingKeepStatementsOnSingleLine, false)
                 .WithChangedOption(CSharpFormattingOptions.WrappingPreserveSingleLine, true);
 
             var rootDirectory = Path.HasExtension(path) ? Path.GetDirectoryName(path) ?? path.Replace(Path.GetFileName(path), "") : path;
-            var filter = new List<string> { "Properties", "obj", "bin" };
+            var filter = new List<string> {"Properties", "obj", "bin"};
             filter.AddRange(excludeDirectories);
             filter.AddRange(excludeFiles);
             filter = filter.ConvertAll(x => Path.Combine(rootDirectory, x));
@@ -124,12 +120,12 @@ namespace IngameScriptBuilder {
 
             if (removeComments) {
                 var rewriter = new NoCommentsSyntaxRewriter();
-                newEntry = (ClassDeclarationSyntax)rewriter.Visit(newEntry);
+                newEntry = (ClassDeclarationSyntax) rewriter.Visit(newEntry);
             }
 
             if (removeDocumentation) {
                 var rewriter = new NoDocumentationSyntaxRewriter();
-                newEntry = (ClassDeclarationSyntax)rewriter.Visit(newEntry);
+                newEntry = (ClassDeclarationSyntax) rewriter.Visit(newEntry);
             }
 
             var formatedEntry = Formatter.Format(newEntry, workspace, options, cancellationToken);
@@ -159,16 +155,16 @@ namespace IngameScriptBuilder {
             }
         }
 
+        private static async Task<IEnumerable<MemberDeclarationSyntax>> GetMemberAsync(SyntaxTree tree, CancellationToken cancellationToken) {
+            var root = (CompilationUnitSyntax) await tree.GetRootAsync(cancellationToken);
+            return root.DescendantNodes(x => x is CompilationUnitSyntax || x is NamespaceDeclarationSyntax).OfType<MemberDeclarationSyntax>().Where(x => x.GetType() != typeof(NamespaceDeclarationSyntax));
+        }
+
         private static string UnindentAsMuchAsPossible(string text) {
             var lines = Regex.Split(text, "\r\n|\r|\n");
             var minDistance = lines.Where(line => line.Length > 0).Min(line => line.TakeWhile(char.IsWhiteSpace).Sum(c => c == '\t' ? IndentSize : 1));
             var result = string.Join(Environment.NewLine, lines.Select(line => line.Replace("\t", new string(' ', IndentSize))).Select(line => line.Substring(Math.Min(line.Length, minDistance))));
             return result;
-        }
-
-        private static async Task<IEnumerable<MemberDeclarationSyntax>> GetMemberAsync(SyntaxTree tree, CancellationToken cancellationToken) {
-            var root = (CompilationUnitSyntax)await tree.GetRootAsync(cancellationToken);
-            return root.DescendantNodes(x => x is CompilationUnitSyntax || x is NamespaceDeclarationSyntax).OfType<MemberDeclarationSyntax>().Where(x => x.GetType() != typeof(NamespaceDeclarationSyntax));
         }
     }
 }
