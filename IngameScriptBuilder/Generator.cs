@@ -135,7 +135,8 @@ namespace IngameScriptBuilder {
             result = result.Remove(result.LastIndexOf("}", StringComparison.Ordinal));
             result = UnindentAsMuchAsPossible(new string(' ', IndentSize) + result.Trim());
 
-            Console.WriteLine($"{result.Length} / 100000");
+            Console.WriteLine($"{AppInfo.Title} [Version {AppInfo.AssemblyVersion}]{Environment.NewLine}");
+            Console.WriteLine($"Length: {result.Length} / 100000");
             if (string.IsNullOrWhiteSpace(output)) {
                 Clipboad.SetText(result);
                 Console.WriteLine("Script copied to Clipboad.");
