@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 namespace IngameScriptBuilder {
     public class Generator {
         private const int IndentSize = 4;
-        public static async Task GenerateAsync(string projectPath, string output, IEnumerable<string> excludeFiles, IEnumerable<string> excludeDirectories, CancellationToken cancellationToken) {
+        public static async Task GenerateAsync(string projectPath, string output, IEnumerable<string> excludeFiles, IEnumerable<string> excludeDirectories, bool removeComments, CancellationToken cancellationToken) {
             var path = Path.GetFullPath(projectPath);
             var workspace = MSBuildWorkspace.Create();
             var options = workspace.Options
@@ -121,6 +121,10 @@ namespace IngameScriptBuilder {
             }
             // todo: sort nested member like: type > name.
             var newEntry = entry.AddMembers(members.Where(x => x != entry).ToArray());
+            if (removeComments) {
+                var rewriter = new NoCommentsSyntaxRewriter();
+                newEntry = (ClassDeclarationSyntax) rewriter.Visit(newEntry);
+            }
             var formatedEntry = Formatter.Format(newEntry, workspace, options, cancellationToken);
 
             string result;
