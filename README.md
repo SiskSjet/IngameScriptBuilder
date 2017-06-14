@@ -3,7 +3,7 @@
 A little tool that helps create ingame script for Space Engineers
 
 ## Note
-In version 0.8.0 minifing is not implemented and loading a C# project currently not working.
+Minification is in an experimental state. This can cause an not working script.
 
 ## Usage
 ```
