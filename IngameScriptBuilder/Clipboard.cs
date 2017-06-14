@@ -1,13 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
 namespace IngameScriptBuilder {
     public static class Clipboard {
         public static void SetText(string text) {
-            var isAscii = text != null && text == Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(text));
-            SetText(text, isAscii ? TextDataFormat.UnicodeText : TextDataFormat.Text);
+            SetText(text, TextDataFormat.UnicodeText);
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]

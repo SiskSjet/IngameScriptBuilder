@@ -82,8 +82,7 @@ namespace IngameScriptBuilder {
             Console.CancelKeyPress += delegate { cts.Cancel(); };
 
             try {
-                // todo: implement parameters.
-                Generator.GenerateAsync(project, output, excludeFiles, excludeDirectories, removeComments, removeDocumentations, ct).Wait(ct);
+                Generator.GenerateAsync(project, output, excludeFiles, excludeDirectories, removeComments, removeDocumentations, minify, ct).Wait(ct);
                 return 0;
             } catch (Exception exception) {
                 Console.WriteLine(exception);
