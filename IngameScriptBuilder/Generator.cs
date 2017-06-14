@@ -87,7 +87,13 @@ namespace IngameScriptBuilder {
                 Clipboard.SetText(result);
                 Console.WriteLine("Script copied to Clipboard.");
             } else {
-                Directory.CreateDirectory(Path.GetDirectoryName(output));
+                var outputPath = Path.GetFullPath(projectPath);
+                var outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!Directory.Exists(outputDirectory)) {
+                    if (outputDirectory != null) {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+                }
                 using (var writer = new StreamWriter(output)) {
                     await writer.WriteAsync(result);
                     Console.WriteLine($"Script written to file: {output}");
