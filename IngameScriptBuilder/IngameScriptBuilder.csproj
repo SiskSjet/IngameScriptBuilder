@@ -166,10 +166,15 @@
     <Compile Include="AppInfo.cs" />
     <Compile Include="Clipboard.cs" />
     <Compile Include="Generator.cs" />
+    <Compile Include="SyntaxRewriter\RemoveEmtpyStatementRewriter.cs" />
+    <Compile Include="SyntaxRewriter\RemoveDefaultAccessModifier.cs" />
     <Compile Include="SyntaxRewriter\NoCommentsSyntaxRewriter.cs" />
     <Compile Include="SyntaxRewriter\NoDocumentationSyntaxRewriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SyntaxRewriter\RemoveRegionRewriter.cs" />
+    <Compile Include="SyntaxRewriter\CompressWhiteSpaceRewriter.cs" />
+    <Compile Include="SyntaxRewriter\TypeNewLineRewriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
