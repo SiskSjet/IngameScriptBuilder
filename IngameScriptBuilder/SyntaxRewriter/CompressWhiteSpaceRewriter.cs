@@ -60,6 +60,7 @@ namespace IngameScriptBuilder.SyntaxRewriter {
             switch (token.Kind()) {
                 case SyntaxKind.SemicolonToken:
                 case SyntaxKind.ColonToken:
+                case SyntaxKind.DotToken:
                 case SyntaxKind.CommaToken:
                 case SyntaxKind.OpenBraceToken:
                 case SyntaxKind.CloseBraceToken:
@@ -67,8 +68,6 @@ namespace IngameScriptBuilder.SyntaxRewriter {
                 case SyntaxKind.OpenParenToken:
                 case SyntaxKind.CloseParenToken:
                 case SyntaxKind.CloseBracketToken:
-                case SyntaxKind.EqualsToken:
-                case SyntaxKind.EqualsEqualsToken:
                 case SyntaxKind.GreaterThanToken:
                 case SyntaxKind.GreaterThanEqualsToken:
                 case SyntaxKind.GreaterThanGreaterThanToken:
@@ -77,6 +76,11 @@ namespace IngameScriptBuilder.SyntaxRewriter {
                 case SyntaxKind.LessThanEqualsToken:
                 case SyntaxKind.LessThanLessThanToken:
                 case SyntaxKind.LessThanLessThanEqualsToken:
+                case SyntaxKind.EqualsToken:
+                case SyntaxKind.EqualsEqualsToken:
+                case SyntaxKind.EqualsGreaterThanToken:
+                case SyntaxKind.LessThanOrEqualExpression:
+                case SyntaxKind.IfKeyword:
                     token = token.WithLeadingTrivia(SyntaxTriviaList.Empty);
                     token = token.WithTrailingTrivia(SyntaxTriviaList.Empty);
                     break;
@@ -85,7 +89,9 @@ namespace IngameScriptBuilder.SyntaxRewriter {
                         token = token.WithTrailingTrivia(SyntaxTriviaList.Empty);
                     } else if (parent is VariableDeclaratorSyntax) {
                         token = token.WithTrailingTrivia(SyntaxTriviaList.Empty);
-                    } else if (parent is IdentifierNameSyntax && parent.Parent is SimpleBaseTypeSyntax) {
+                    } else if (parent is ParameterSyntax) {
+                        token = token.WithTrailingTrivia(SyntaxTriviaList.Empty);
+                    } else if (parent is IdentifierNameSyntax && (parent.Parent is SimpleBaseTypeSyntax || parent.Parent is MemberAccessExpressionSyntax)) {
                         token = token.WithTrailingTrivia(SyntaxTriviaList.Empty);
                     }
                     break;
