@@ -1,3 +1,6 @@
+_For a much better solution with Visual Studio i recommend [MDK-SE](https://github.com/malware-dev/MDK-SE) from [Malware](https://github.com/malware-dev)_
+
+
 ![logo](IngameScriptBuilder/icon.ico)
 # IngameScriptBuilder
 A little tool that helps create ingame script for Space Engineers
